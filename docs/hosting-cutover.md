@@ -47,17 +47,17 @@ rollback, and leave GitHub Pages active through the verification window.
 - [x] Static config/workflow prepared; local homepage, routes and cache headers checked.
 - [x] CLI upload manifest checked: 42 static files, excluding Git metadata and config.
 - [x] Preparation TXT records confirmed at one.com's authoritative nameserver.
-- [ ] Firebase confirms certificate preparation (asynchronous validation pending).
+- [x] Firebase confirms certificate preparation.
 - [x] Manual marketing deploy succeeds on `https://worldofbeacons-web.web.app`.
 - [x] Deployment service account JSON installed as the repository secret.
 - [x] [PR #1](https://github.com/WorldOfBeacons/web/pull/1) merged to main;
   [first live GitHub Actions run](https://github.com/WorldOfBeacons/web/actions/runs/36754060335)
   is green (40 seconds).
-- [ ] Firebase apex certificate prepared via Advanced setup.
+- [x] Firebase apex certificate prepared via Advanced setup.
 - [x] www CNAME changed at one.com to `worldofbeacons-web.web.app` (TTL 600).
-- [ ] Apex traffic records updated at one.com; www certificate provisioned.
-- [ ] Both hostnames show Connected and valid TLS with marketing content.
-- [ ] Pages disabled and `CNAME` removed after cutover.
+- [x] Apex traffic records updated at one.com; www certificate provisioned.
+- [x] Both hostnames show Connected and valid TLS with marketing content.
+- [x] Pages disabled and `CNAME` removed after cutover.
 
 At 19:56 Europe/Stockholm on 2026-09-30, the www CNAME was confirmed on both
 `ns01.one.com` and `ns02.one.com`. Google and Cloudflare resolvers also saw the
@@ -66,6 +66,36 @@ records. The apex certificate was `CERT_PROPAGATING`; www was `CERT_VALIDATING`.
 A direct apex TLS request to Firebase passed hostname validation but returned
 Firebase's 404, so apex traffic remains on Pages pending ownership activation.
 Pages and its `CNAME` must remain active through this wait.
+
+Hourly check at 21:40 Europe/Stockholm on 2026-09-30: www now returns HTTP 200
+over valid HTTPS, and its homepage SHA-256 matches the export. Firebase reports
+`HOST_ACTIVE`, `OWNERSHIP_ACTIVE`, and `CERT_ACTIVE` for www. Apex ownership and
+certificate are also active, but its traffic still uses GitHub Pages
+(`HOST_MISMATCH`). A direct HTTPS request to `199.36.158.100` with apex SNI passes
+certificate validation but still returns HTTP 404. The scheduled preflight
+requires correct apex content before changing traffic, so no apex DNS change or
+Pages cleanup was performed. Both public hostnames currently serve the correct
+homepage; the apex direct-to-Firebase content check remains outstanding.
+
+At 23:40 Europe/Stockholm on 2026-09-30 the direct apex Firebase preflight
+returned HTTP 200 with valid TLS and the exact export SHA-256. The apex ownership
+and certificate were active. At 23:43 the apex A records were replaced with
+`199.36.158.100` (TTL 600), and all four old GitHub Pages AAAA records removed.
+Both one.com authoritative nameservers confirmed the new A value; Cloudflare
+also saw it, while Google and the local resolver still cached GitHub addresses.
+Both public domains remained HTTP 200 with valid TLS. Keep Pages and repository
+`CNAME` active until cached old A/AAAA records have cleared and both domains are
+verified on Firebase. Screenshot: `/private/tmp/wob-apex-dns-cutover.jpg`.
+
+Final verification at 00:42 Europe/Stockholm on 2026-10-01: both domains report
+`HOST_ACTIVE`, `OWNERSHIP_ACTIVE`, and `CERT_ACTIVE`. Both return HTTP 200 with
+valid HTTPS and the exact exported homepage SHA-256. Cloudflare and Google
+resolvers return only `199.36.158.100` for apex A and no apex AAAA records. The
+public apex response now carries Firebase Hosting headers. GitHub Pages was
+disabled after these checks; this cleanup removes the old repository `CNAME`.
+Retain ownership and certificate TXT records. To roll back in future, first
+re-enable Pages and restore its `CNAME`, verify its content and TLS, then restore
+the old traffic records above; do not point DNS at an unverified fallback.
 
 The default site's last release remained 2026-09-29 12:39:27 UTC (version
 `9ce6cc9b53689fec`); `worldofbeacons-app` still had no releases. Both migration
