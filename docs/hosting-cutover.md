@@ -2,7 +2,7 @@
 
 Prepared on 2026-09-30 for Firebase project `worldofbeacons`, site
 `worldofbeacons-web`, target `www`. Domain records below were read from Firebase
-Console for this site, not inferred from generic examples.
+Console and its Hosting API for this site, not inferred from generic examples.
 
 ## DNS plan at one.com
 
@@ -15,6 +15,7 @@ Preparation records (safe while production still uses GitHub Pages):
 | --- | --- | --- | --- |
 | TXT | empty (apex) | `hosting-site=worldofbeacons-web` | 600 |
 | TXT | `_acme-challenge` | `cOcFsl5tvh9cQQdIcCmByWQSbXvFxWgLoql2WAbQNVI` | 600 |
+| TXT | `_acme-challenge.www` | `en3pTaqw-KMiEYaPRtZ6hN1ADs2JhvvOsdE0VlBmnB8` | 600 |
 
 The ACME challenge can change. Reopen the apex domain's Advanced setup in Firebase
 Console and compare the value before applying this plan later. Keep validation
@@ -49,11 +50,26 @@ rollback, and leave GitHub Pages active through the verification window.
 - [ ] Firebase confirms certificate preparation (asynchronous validation pending).
 - [x] Manual marketing deploy succeeds on `https://worldofbeacons-web.web.app`.
 - [x] Deployment service account JSON installed as the repository secret.
-- [ ] PR merged to main; first live GitHub Actions run is green.
+- [x] [PR #1](https://github.com/WorldOfBeacons/web/pull/1) merged to main;
+  [first live GitHub Actions run](https://github.com/WorldOfBeacons/web/actions/runs/36754060335)
+  is green (40 seconds).
 - [ ] Firebase apex certificate prepared via Advanced setup.
-- [ ] Traffic records updated at one.com; www certificate provisioned.
+- [x] www CNAME changed at one.com to `worldofbeacons-web.web.app` (TTL 600).
+- [ ] Apex traffic records updated at one.com; www certificate provisioned.
 - [ ] Both hostnames show Connected and valid TLS with marketing content.
 - [ ] Pages disabled and `CNAME` removed after cutover.
+
+At 19:56 Europe/Stockholm on 2026-09-30, the www CNAME was confirmed on both
+`ns01.one.com` and `ns02.one.com`. Google and Cloudflare resolvers also saw the
+apex ownership TXT. Firebase's ownership checks still reported cached older
+records. The apex certificate was `CERT_PROPAGATING`; www was `CERT_VALIDATING`.
+A direct apex TLS request to Firebase passed hostname validation but returned
+Firebase's 404, so apex traffic remains on Pages pending ownership activation.
+Pages and its `CNAME` must remain active through this wait.
+
+The default site's last release remained 2026-09-29 12:39:27 UTC (version
+`9ce6cc9b53689fec`); `worldofbeacons-app` still had no releases. Both migration
+deploys affected only `worldofbeacons-web`.
 
 Baseline before migration: apex returned HTTP 200 from GitHub Pages; www failed
 hostname verification. Do not treat that as successful Firebase verification.
@@ -64,6 +80,7 @@ dig +short worldofbeacons.com AAAA
 dig +short www.worldofbeacons.com CNAME
 dig +short worldofbeacons.com TXT
 dig +short _acme-challenge.worldofbeacons.com TXT
+dig +short _acme-challenge.www.worldofbeacons.com TXT
 curl --fail --head https://worldofbeacons-web.web.app/
 curl --fail --head https://worldofbeacons.com/
 curl --fail --head https://www.worldofbeacons.com/
