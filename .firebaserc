@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "worldofbeacons"
+  },
+  "targets": {
+    "worldofbeacons": {
+      "hosting": {
+        "www": ["worldofbeacons-web"]
+      }
+    }
+  }
+}
