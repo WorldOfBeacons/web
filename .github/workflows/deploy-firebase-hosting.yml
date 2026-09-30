@@ -1,0 +1,47 @@
+name: Deploy marketing site to Firebase Hosting
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marketing-hosting-live
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out static export
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Verify dedicated marketing target
+        run: |
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const config = JSON.parse(fs.readFileSync('firebase.json', 'utf8'));
+          const rc = JSON.parse(fs.readFileSync('.firebaserc', 'utf8'));
+          assert.deepEqual(Object.keys(config), ['hosting']);
+          assert.equal(config.hosting.target, 'www');
+          assert.equal(config.hosting.public, '.');
+          assert.equal(rc.projects.default, 'worldofbeacons');
+          assert.deepEqual(rc.targets.worldofbeacons.hosting, { www: ['worldofbeacons-web'] });
+          assert.ok(fs.existsSync('index.html'));
+          NODE
+
+      - name: Deploy only the marketing site
+        uses: FirebaseExtended/action-hosting-deploy@7c850a480ce753f4f06f010801fc5a43787740bb # v0
+        with:
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WORLDOFBEACONS }}
+          projectId: worldofbeacons
+          channelId: live
+          target: www
