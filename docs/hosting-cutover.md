@@ -45,9 +45,10 @@ rollback, and leave GitHub Pages active through the verification window.
 - [x] Apex and www registered on the dedicated site.
 - [x] Static config/workflow prepared; local homepage, routes and cache headers checked.
 - [x] CLI upload manifest checked: 42 static files, excluding Git metadata and config.
-- [ ] Preparation TXT records confirmed in public DNS and Firebase.
-- [ ] Manual marketing deploy succeeds on `https://worldofbeacons-web.web.app`.
-- [ ] Deployment service account JSON installed as the repository secret.
+- [x] Preparation TXT records confirmed at one.com's authoritative nameserver.
+- [ ] Firebase confirms certificate preparation (asynchronous validation pending).
+- [x] Manual marketing deploy succeeds on `https://worldofbeacons-web.web.app`.
+- [x] Deployment service account JSON installed as the repository secret.
 - [ ] PR merged to main; first live GitHub Actions run is green.
 - [ ] Firebase apex certificate prepared via Advanced setup.
 - [ ] Traffic records updated at one.com; www certificate provisioned.
