@@ -85,7 +85,6 @@ Use Firebase's Advanced setup for the existing apex domain so the certificate ca
 be prepared while Pages continues serving traffic. Certificate provisioning is
 asynchronous; see [Firebase's domain setup guide](https://firebase.google.com/docs/hosting/custom-domain).
 
-Keep `CNAME` until DNS cutover and HTTPS verification have succeeded. It is excluded
-from Firebase uploads. After both hostnames have valid Firebase TLS and correct
-content, disable Pages for this repo, delete `CNAME` in a follow-up PR, and merge
-that cleanup. Do not disable Pages while DNS still points at GitHub.
+The DNS cutover and HTTPS verification completed on 2026-10-01. Both domains
+serve the marketing export from Firebase. GitHub Pages is disabled and the old
+`CNAME` file is removed. Keep Firebase verification TXT records in DNS.
